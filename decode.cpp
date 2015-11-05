@@ -4,20 +4,13 @@
 #include <vector>
 using std::vector;
 #include <stddef.h> /* size_t */
-#include <algorithm>
-using std::max_element;
-#include <utility>
-using std::pair;
 #include <iostream>
 using std::cin;
-
-typedef pair<int,int> intp;
 
 /* compute a subset S of X whch sums to t.  Return value is the size
  * of the subset; thus a return value of 0 indicates failure. */
 size_t sssum(const vector<size_t>& X, size_t t, vector<size_t>& S)
 {
-	// size_t m = max_element(X.begin(),X.end());
 	size_t n = X.size();
 	/* now allocate table for results. */
 	vector< vector<bool> > A(n,vector<bool>(t+1,false));
