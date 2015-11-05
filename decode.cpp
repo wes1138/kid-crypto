@@ -1,4 +1,5 @@
-/* Decoder for toy cryptosystem sent to me by Jean Pena */
+/* Decoder for toy cryptosystem.  Problem was sent to me by Jean Pena
+ * (and was originally posed by Nintendo, I guess) */
 
 #include <cstdio>
 #include <NTL/GF2XFactoring.h>
@@ -14,6 +15,8 @@ using std::hex;
 using std::setw;
 using std::setfill;
 #include <inttypes.h> /* uint32_t */
+
+// #define DBGPRINT 1
 
 /* compute a subset S of X whch sums to t.  Return value is the size
  * of the subset; thus a return value of 0 indicates failure. */
@@ -72,20 +75,45 @@ int main(int argc, char *argv[]) {
 	GF2X f;
 	/* NOTE: this assumes little-endian byte ordering. */
 	GF2XFromBytes(f,reinterpret_cast<unsigned char*>(b),n/4);
+	if (IsZero(f)) {
+		fprintf(stderr,"too many solutions x_x\n");
+		return 1;
+	}
+	#if DBGPRINT
 	cout << f << "\n";
+	#endif
 	/* factor it */
 	vec_pair_GF2X_long factors;
 	CanZass(factors,f);
-	#if 1
-	/* print list of factors */
+	/* use subset sum to find products with degree n-1 */
+	vector<size_t> D;
 	for (int i = 0; i < factors.length(); i++) {
-		// printf("degree f[%i] = %lu\n",i,factors[i].b);
+		for (int j = 0; j < factors[i].b; j++) {
+			D.push_back(deg(factors[i].a));
+		}
+	#if DBGPRINT
 		printf("      degree f[%i] = %lu\n",i,deg(factors[i].a));
 		printf("multiplicity f[%i] = %lu\n",i,factors[i].b);
-		// cout << factors[i].a << "\n";
-	}
 	#endif
-	/* use subset sum to find products with degree n-1 */
+	}
+	vector<size_t> S;
+	size_t r = sssum(D,n-1,S);
+	if (!r) {
+		fprintf(stderr,"no solution -_-\n");
+		return 1;
+	}
+	GF2X g,h;
+	set(g); set(h);
+	for (size_t i = 0; i < S.size(); i++) {
+		g *= factors[S[i]].a;
+	}
+	h = f / g;
+	BytesFromGF2X(reinterpret_cast<unsigned char*>(a),g,n/8);
+	BytesFromGF2X(reinterpret_cast<unsigned char*>(a+n/32),h,n/8);
+	for (size_t i = 0; i < n/16; i++) {
+		printf("%x ",a[i]);
+	}
+	printf("\n");
 	delete [] b;
 	delete [] a;
 	return 0;
