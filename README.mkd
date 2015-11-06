@@ -7,8 +7,7 @@ Synopsis
 Decoder for toy cryptosystem (aka, why you do RSA over Z, and not other
 domains).
 
-Problem was sent to me by Jean Pena.  [Originally posed by
-Nintendo][nintendo], I guess:
+Problem was sent to me by Jean Pena. [Originally posed by Nintendo][nintendo].
 
 Dependencies
 ------------
