@@ -44,6 +44,49 @@ size_t sssum(const vector<size_t>& X, size_t t, vector<size_t>& S)
 	return S.size();
 }
 
+size_t allSSums(const vector<size_t>& X, size_t t,
+		vector< vector< vector<size_t> > >& S) {
+	/* store table of all solutions (potentially exponential) for
+	 * each sum less than t. */
+	S.resize(t+1);
+	/* only one way to get 0 -- the empty set: */
+	S[0].push_back(vector<size_t>());
+	size_t partial = 0; /* upper bound to work backwards from */
+	for (size_t i = 0; i < X.size(); i++) {
+		partial += X[i];
+		if (partial > t) partial = t;
+		for (size_t j = partial; j >= X[i]; j--) {
+			for (size_t k = 0; k < S[j-X[i]].size(); k++) {
+				/* copy S[j-X[i]][k] and add i */
+				S[j].push_back(S[j-X[i]][k]);
+				S[j][S[j].size()-1].push_back(i);
+			}
+		}
+	}
+	return S[t].size();
+}
+
+int subsetSumTest2() {
+	vector<size_t> X = {1,7,4,13,8};
+	vector< vector< vector<size_t> > > S;
+	size_t t;
+	while (cin >> t) {
+		S.clear();
+		size_t r = allSSums(X,t,S);
+		if (r) {
+			printf("solutions of size %lu:\n",r);
+			for (size_t i = 0; i < r; i++) {
+				printf("{ ");
+				for (size_t j = 0; j < S[t][i].size(); j++) {
+					printf("%lu ",S[t][i][j]);
+				}
+				printf("}\n");
+			}
+		}
+	}
+	return 0;
+}
+
 int subsetSumTest() {
 	vector<size_t> X = {1,7,4,13,8};
 	vector<size_t> S;
@@ -62,8 +105,9 @@ int subsetSumTest() {
 	return 0;
 }
 
-int main(int argc, char *argv[]) {
-	// return subsetSumTest();
+int main(int argc, char *argv[])
+{
+	// return subsetSumTest2();
 	/* read input */
 	size_t n; cin >> n;
 	uint32_t* b = new uint32_t[n/16];
@@ -87,33 +131,36 @@ int main(int argc, char *argv[]) {
 	CanZass(factors,f);
 	/* use subset sum to find products with degree n-1 */
 	vector<size_t> D;
+	vector<GF2X> F; /* expand factors for convenience */
 	for (int i = 0; i < factors.length(); i++) {
 		for (int j = 0; j < factors[i].b; j++) {
 			D.push_back(deg(factors[i].a));
+			F.push_back(factors[i].a);
 		}
 	#if DBGPRINT
 		printf("      degree f[%i] = %lu\n",i,deg(factors[i].a));
 		printf("multiplicity f[%i] = %lu\n",i,factors[i].b);
 	#endif
 	}
-	vector<size_t> S;
-	size_t r = sssum(D,n-1,S);
+	vector< vector< vector<size_t> > > S;
+	size_t r = allSSums(D,n-1,S);
 	if (!r) {
 		fprintf(stderr,"no solution -_-\n");
 		return 1;
 	}
 	GF2X g,h;
-	set(g); set(h);
-	for (size_t i = 0; i < S.size(); i++) {
-		g *= factors[S[i]].a;
+	for (size_t i = 0; i < r; i++) {
+		set(g); set(h);
+		for (size_t j = 0; j < S[n-1][i].size(); j++) {
+			g *= F[S[n-1][i][j]];
+		}
+		h = f / g;
+		BytesFromGF2X(reinterpret_cast<unsigned char*>(a),g,n/8);
+		BytesFromGF2X(reinterpret_cast<unsigned char*>(a+n/32),h,n/8);
+		for (size_t k = 0; k < n/16; k++)
+			printf("%08x ",a[k]);
+		printf("\n");
 	}
-	h = f / g;
-	BytesFromGF2X(reinterpret_cast<unsigned char*>(a),g,n/8);
-	BytesFromGF2X(reinterpret_cast<unsigned char*>(a+n/32),h,n/8);
-	for (size_t i = 0; i < n/16; i++) {
-		printf("%x ",a[i]);
-	}
-	printf("\n");
 	delete [] b;
 	delete [] a;
 	return 0;
