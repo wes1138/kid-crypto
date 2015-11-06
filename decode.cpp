@@ -1,5 +1,4 @@
-/* Decoder for toy cryptosystem.  Problem was sent to me by Jean Pena
- * (and was originally posed by Nintendo, I guess) */
+/* Decoder for toy cryptosystem. */
 
 #include <cstdio>
 #include <NTL/GF2XFactoring.h>
