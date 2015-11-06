@@ -42,7 +42,6 @@ size_t allSSums(const vector<size_t>& X, size_t t,
 
 int main(int argc, char *argv[])
 {
-	// return subsetSumTest();
 	/* read input */
 	size_t n; cin >> n;
 	uint32_t* b = new uint32_t[n/16];
@@ -60,9 +59,6 @@ int main(int argc, char *argv[])
 	} else if (deg(f) < (long)(2*(n-1))) {
 		fprintf(stderr,"you lied about size >:|\n");
 	}
-	#if DBGPRINT
-	cout << f << "\n";
-	#endif
 	/* factor it */
 	vec_pair_GF2X_long factors;
 	CanZass(factors,f);
