@@ -41,27 +41,6 @@ size_t allSSums(const vector<size_t>& X, size_t t,
 	return S[t].size();
 }
 
-int subsetSumTest() {
-	vector<size_t> X = {1,7,4,13,8};
-	vector< vector< vector<size_t> > > S;
-	size_t t;
-	while (cin >> t) {
-		S.clear();
-		size_t r = allSSums(X,t,S);
-		if (r) {
-			printf("solutions of size %lu:\n",r);
-			for (size_t i = 0; i < r; i++) {
-				printf("{ ");
-				for (size_t j = 0; j < S[t][i].size(); j++) {
-					printf("%lu ",S[t][i][j]);
-				}
-				printf("}\n");
-			}
-		}
-	}
-	return 0;
-}
-
 int main(int argc, char *argv[])
 {
 	// return subsetSumTest();
@@ -79,6 +58,8 @@ int main(int argc, char *argv[])
 	if (IsZero(f)) {
 		fprintf(stderr,"too many solutions x_x\n");
 		return 1;
+	} else if (deg(f) < (long)(2*(n-1))) {
+		fprintf(stderr,"you lied about size >:|\n");
 	}
 	#if DBGPRINT
 	cout << f << "\n";
