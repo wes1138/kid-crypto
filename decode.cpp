@@ -43,21 +43,21 @@ size_t allSSums(const vector<size_t>& X, size_t t,
 int main(int argc, char *argv[])
 {
 	/* read input */
-	size_t n; cin >> n;
-	uint32_t* b = new uint32_t[n/16];
-	uint32_t* a = new uint32_t[n/16];
-	for (size_t i = 0; i < n/16; i++) {
+	size_t len; cin >> len;
+	uint32_t* b = new uint32_t[len/16];
+	uint32_t* a = new uint32_t[len/16];
+	for (size_t i = 0; i < len/16; i++) {
 		cin >> hex >> b[i];
 	}
 	/* convert input to a polynomial */
 	GF2X f;
 	/* NOTE: this assumes little-endian byte ordering. */
-	GF2XFromBytes(f,reinterpret_cast<unsigned char*>(b),n/4);
+	GF2XFromBytes(f,reinterpret_cast<unsigned char*>(b),len/4);
+	/* expected f to be degree 2n-2. */
+	size_t n = deg(f);
 	if (IsZero(f)) {
 		fprintf(stderr,"too many solutions x_x\n");
 		return 1;
-	} else if (deg(f) < (long)(2*(n-1))) {
-		fprintf(stderr,"you lied about size >:|\n");
 	}
 	/* factor it */
 	vec_pair_GF2X_long factors;
@@ -75,24 +75,26 @@ int main(int argc, char *argv[])
 		printf("multiplicity f[%i] = %lu\n",i,factors[i].b);
 	#endif
 	}
+	/* Each factor must have degree < len.  Possibilities:
+	 * n/2-r ... n/2+r, where r = (len-1) - n/2. */
 	vector< vector< vector<size_t> > > S;
-	size_t r = allSSums(D,n-1,S);
-	if (!r) {
-		fprintf(stderr,"no solution -_-\n");
-		return 1;
-	}
+	size_t r = (len - 1) - n/2;
+	if (r > n/2) r = n/2; /* take care of really small n. */
+	allSSums(D,len-1+r,S);
 	GF2X g,h;
-	for (size_t i = 0; i < r; i++) {
-		set(g); set(h);
-		for (size_t j = 0; j < S[n-1][i].size(); j++) {
-			g *= F[S[n-1][i][j]];
+	for (size_t k = n/2-r; k <= n/2+r; k++) {
+		for (size_t i = 0; i < S[k].size(); i++) {
+			set(g); set(h);
+			for (size_t j = 0; j < S[k][i].size(); j++) {
+				g *= F[S[k][i][j]];
+			}
+			h = f / g;
+			BytesFromGF2X(reinterpret_cast<unsigned char*>(a),g,len/8);
+			BytesFromGF2X(reinterpret_cast<unsigned char*>(a+len/32),h,len/8);
+			for (size_t l = 0; l < len/16; l++)
+				printf("%08x ",a[l]);
+			printf("\n");
 		}
-		h = f / g;
-		BytesFromGF2X(reinterpret_cast<unsigned char*>(a),g,n/8);
-		BytesFromGF2X(reinterpret_cast<unsigned char*>(a+n/32),h,n/8);
-		for (size_t k = 0; k < n/16; k++)
-			printf("%08x ",a[k]);
-		printf("\n");
 	}
 	delete [] b;
 	delete [] a;
