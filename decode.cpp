@@ -6,13 +6,6 @@ using namespace NTL;
 #include <vector>
 using std::vector;
 #include <stddef.h> /* size_t */
-#include <iostream>
-using std::cin;
-using std::cout;
-#include <iomanip>
-using std::hex;
-using std::setw;
-using std::setfill;
 #include <inttypes.h> /* uint32_t */
 
 // #define DBGPRINT 1
@@ -43,11 +36,12 @@ size_t allSSums(const vector<size_t>& X, size_t t,
 int main(int argc, char *argv[])
 {
 	/* read input */
-	size_t len; cin >> len;
+	size_t len;
+	scanf("%lu",&len);
 	uint32_t* b = new uint32_t[len/16];
 	uint32_t* a = new uint32_t[len/16];
 	for (size_t i = 0; i < len/16; i++) {
-		cin >> hex >> b[i];
+		scanf("%x",b+i);
 	}
 	/* convert input to a polynomial */
 	GF2X f;
